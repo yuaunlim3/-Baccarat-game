@@ -9,34 +9,27 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ServerApp {
+public class ClientHandler implements Runnable {
+    private final Socket sock;
+    private BaccaratEngine game;
 
-    private static ServerSocket socket;
-    private static Socket sock;
+    public ClientHandler(Socket s, BaccaratEngine game) {
+        this.sock = s;
+        this.game = game;
+    }
 
-    public static void main(String[] args) {
-        try{
-            int portNum = 3000;
-            int deckNum = 1;
-            if(args.length > 0){
-                portNum = Integer.parseInt(args[0]);
-                deckNum = Integer.parseInt(args[1]);
-            }
-            socket = new ServerSocket(portNum);
-
-            System.out.printf("Waiting for connection on port %d\n", portNum);
-            sock = socket.accept();
-            System.out.println("Got a new connection\n");
-            BaccaratEngine game = new BaccaratEngine(deckNum);
-            //to read from client
+    @Override
+    public void run() {
+        String threadName = Thread.currentThread().getName();
+        System.out.printf("===================%s===============\n",threadName);
+        try {
+            // to read from client
             InputStream is = sock.getInputStream();
             Reader reader = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(reader);
 
-            
             // Get the write to client
             OutputStream os = sock.getOutputStream();
             Writer writer = new OutputStreamWriter(os);
@@ -45,36 +38,31 @@ public class ServerApp {
             String fromClient;
             String toClient;
 
-            while((fromClient = br.readLine()) != null){
+            while ((fromClient = br.readLine()) != null) {
                 String[] inputs = fromClient.split("\\|");
-                if(inputs[0].equalsIgnoreCase("login")){
+                if (inputs[0].equalsIgnoreCase("login")) {
                     game.createPlayer(inputs[1], Integer.parseInt(inputs[2]));
-                }else if(inputs[0].equalsIgnoreCase("bet")){
+                } else if (inputs[0].equalsIgnoreCase("bet")) {
                     int bet = Integer.parseInt(inputs[1]);
                     game.betMade(bet);
-                }else if(inputs[0].equalsIgnoreCase("deal")){
+                } else if (inputs[0].equalsIgnoreCase("deal")) {
                     toClient = game.deal(inputs[1]);
                     game.amountLeft();
                     bw.write(toClient);
                     bw.newLine();
                     bw.flush();
-                }else if(inputs[0].equalsIgnoreCase("close")){
-                    System.exit(0);
+                } else if (inputs[0].equalsIgnoreCase("close")) {
+                    ThreadedServerApp.stopServer();
                 }
             }
             bw.close();
             br.close();
-
-
-
-        }catch(IOException ex){
+        } catch (IOException ex) {
             ex.printStackTrace();
-        }finally{
+        } finally {
             try {
-                if (socket != null && !socket.isClosed()) {
-                    socket.close();
-                }
-                System.out.println("Server socket closed.");
+                System.out.println("Socket close");
+                sock.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }

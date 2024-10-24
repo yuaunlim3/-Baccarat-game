@@ -17,7 +17,7 @@ public class BaccaratEngine {
     private int amount;
     private int betAmt;
     private String bet;
-    protected Deck deck;
+    protected volatile Deck deck;
     protected String results;
     protected int rounds;
 
@@ -62,11 +62,9 @@ public class BaccaratEngine {
         this.betAmt = betAmt;
     }
 
-    public String deal(String target) throws IOException{
+    public synchronized String deal(String target) throws IOException{
         String result = "";
         if(this.betAmt <= this.amount && this.deck.getSize() > 4){
-            deck.shuffle();
-            deck.shuffle();
             this.bet = target;
             int clientTotal = 0;
             int dealerTotal = 0;
@@ -131,7 +129,7 @@ public class BaccaratEngine {
             }
             
             String win = winner(dealerTotal % 10, clientTotal % 10 );
-        
+            System.out.printf("<==================%s==============>",this.name);
             System.out.printf("Round %d=================\n",this.rounds);
             System.out.printf("The winner is %s, your bet is %s\n",win,this.bet);
             if(win.equalsIgnoreCase(this.bet)){
@@ -215,6 +213,7 @@ public class BaccaratEngine {
             }
             br.close();
             inputs.add(this.results);
+            inputs.add(this.name);
 
             FileWriter fw = new FileWriter(readFile);
             BufferedWriter bw = new BufferedWriter(fw);

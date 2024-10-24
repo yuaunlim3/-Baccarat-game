@@ -36,6 +36,7 @@ public class Deck {
             }
         }
         createFile();
+        shuffle();
 
     }
 
