@@ -55,7 +55,36 @@ public class ClientApp {
                 String[] inputs = cmd.split("\\|");
                 if(inputs[0].equalsIgnoreCase("deal")){
                     String fromServer = br.readLine();
-                    System.out.println(fromServer);  
+                    String[] result = fromServer.split(",");
+                    String[] player = result[0].split("\\|");
+                    String[] banker = result[1].split("\\|");
+                    int playerVal = 0;
+                    int bankerVal = 0;
+                    for(String value:player){
+                        if(value.equalsIgnoreCase("P")){
+                            continue;
+                        }else{
+                        playerVal += Integer.parseInt(value);
+                        }
+                    }
+                    for(String value:banker){
+                        if(value.equalsIgnoreCase("B")){
+                            continue;
+                        }else{
+                        bankerVal += Integer.parseInt(value);
+                        }
+                    }
+                    bankerVal %= 10;
+                    playerVal %= 10;
+                    System.out.printf("Player value is %d\n",playerVal);
+                    System.out.printf("Banker value is %d\n",bankerVal);
+                    if(playerVal > bankerVal){
+                        System.out.printf("Player won by %d points\n",playerVal - bankerVal);
+                    }else if(bankerVal > playerVal){
+                        System.out.printf("Banker won by %d points\n",bankerVal - playerVal);
+                    }else if(bankerVal == playerVal){
+                        System.out.println("Its a draw");
+                    }
                 }
             }
 

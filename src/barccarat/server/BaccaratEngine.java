@@ -59,6 +59,7 @@ public class BaccaratEngine {
 
 
     public void betMade(int betAmt){
+        System.out.printf("Bet of %d made\n",betAmt);
         this.betAmt = betAmt;
     }
 
@@ -160,6 +161,7 @@ public class BaccaratEngine {
             result = "Insufficient amount";
             
         }
+        System.out.println(result);
         return result;
     }
 
